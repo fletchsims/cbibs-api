@@ -1,9 +1,7 @@
-import pandas as pd
 import os
+
+import pandas as pd
 from dotenv import load_dotenv
-import collections
-import requests
-import re
 
 load_dotenv()
 
@@ -23,13 +21,13 @@ CB_STATIONS = [
 station_ids = {station: code for station, code in CB_STATIONS}
 OCEAN_FILES = []
 MET_FILES = []
-for i in os.listdir("/Users/fletcherbsims/Downloads/buoybay-reports-45388/"):
-    if re.search("(MET)", i):
-        MET_FILES.append(i)
-    elif re.search("(OCEAN)", i):
-        OCEAN_FILES.append(i)
-    else:
-        None
+# for i in os.listdir("${HOME}/fletcherbsims/PycharProjects/cbibs-api/datasets/AN/"):
+#     if re.search("(MET)", i):
+#         MET_FILES.append(i)
+#     elif re.search("(OCEAN)", i):
+#         OCEAN_FILES.append(i)
+#     else:
+#         None
 
 # Let's just load in the Annapolis buoy data
 an_met = pd.read_csv(os.getenv('PATH_TO_MET'), skiprows=lambda x: x in [1, 2])
