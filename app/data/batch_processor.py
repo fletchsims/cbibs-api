@@ -4,7 +4,7 @@ import os
 
 import dotenv
 import pandas as pd
-from sqlalchemy import create_engine, Table, Column, String, MetaData, Integer, Float
+from sqlalchemy import create_engine, Table, Column, String, MetaData, Integer, Float, select, TIMESTAMP
 from sqlalchemy.exc import SQLAlchemyError
 
 from settings import DB_NAME, DB_HOST, DB_PORT, DB_PASSWORD, DB_TABLE_OCEAN, DB_USER, DB_TABLE_MET
@@ -60,6 +60,7 @@ def infer_sqlalchemy_type(dtype):
         'int': Integer,
         'float': Float,
         'decimal': Float,
+        'datetime': TIMESTAMP,
         'object': String(255)
     }
     for key, sql_type in dtype_mapping.items():
@@ -75,6 +76,11 @@ def load_and_process_csv(file_path, col_alias=None):
         data = pd.concat(
             (pd.read_csv(f, skiprows=lambda x: x in [1, 2]).rename(columns=col_alias) for f in all_files),
             ignore_index=True)
+
+        # Convert 'Time (UTC)' to datetime
+        if 'time_utc' in data.columns:
+            data['time_utc'] = pd.to_datetime(data['time_utc'], dayfirst=True, format='mixed')
+
         logging.info("CSV file loaded successfully.")
         return data
     except FileNotFoundError as e:
@@ -91,6 +97,10 @@ def create_table(metadata, df, table_name):
     table = Table(table_name, metadata, *columns)
     logging.info(f"Table schema for '{table_name}' successfully created.")
     return table
+
+
+# def check_for_latest_records(table_name):
+#     stmt = select(table_name).where()
 
 
 def etl(file_path_var, schema, db_table_name):
