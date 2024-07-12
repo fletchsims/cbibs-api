@@ -112,6 +112,18 @@ def filter_new_data(df, table, engine, time_col='time_utc'):
         raise
 
 
+def remove_duplicates(df, table, engine, time_col='time_utc'):
+    try:
+        with engine.connect() as connection:
+            existing_data = pd.read_sql_table(table.name, connection)
+            merged_df = pd.concat([existing_data, df]).drop_duplicates(subset=[time_col], keep='last')
+            new_data = merged_df[~merged_df.index.isin(existing_data.index)]
+            return new_data
+    except SQLAlchemyError as e:
+        logging.error(f"Error querying the database for duplicates: {e}")
+        raise
+
+
 def etl(file_path_var, schema, db_table_name):
     """ Main function to execute ETL process """
     logging.info(f"Running ETL for '{db_table_name}'")
