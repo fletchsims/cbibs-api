@@ -99,8 +99,17 @@ def create_table(metadata, df, table_name):
     return table
 
 
-# def check_for_latest_records(table_name):
-#     stmt = select(table_name).where()
+def filter_new_data(df, table, engine, time_col='time_utc'):
+    try:
+        with engine.connect() as connection:
+            stmt = select(table.c[time_col]).order_by(table.c[time_col].desc()).limit(1)
+            max_time = connection.execute(stmt).scalar()
+            if max_time:
+                df = df[df[time_col] > max_time]
+            return df
+    except SQLAlchemyError as e:
+        logging.error(f"Error querying the database: {e}")
+        raise
 
 
 def etl(file_path_var, schema, db_table_name):
@@ -117,9 +126,14 @@ def etl(file_path_var, schema, db_table_name):
         table = create_table(metadata, df, table_name)
 
         engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
-        table.create(engine)
-        df.to_sql(table_name, engine, schema='public', index=False, if_exists='append')
-        logging.info(f"Data inserted successfully for '{db_table_name}'.")
+        df = filter_new_data(df, table, engine)
+
+        if not df.empty:
+            table.create(engine)
+            df.to_sql(table_name, engine, schema='public', index=False, if_exists='append')
+            logging.info(f"Data inserted successfully for '{db_table_name}'.")
+        else:
+            logging.info(f"No new data to insert into '{db_table_name}'")
     except SQLAlchemyError as e:
         logging.error(f"SQLAlchemy error: {e}")
         raise
