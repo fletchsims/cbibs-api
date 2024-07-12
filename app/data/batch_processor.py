@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+from collections import namedtuple
 
 import dotenv
 import pandas as pd
@@ -14,6 +15,9 @@ dotenv.load_dotenv()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+Station = namedtuple('Station', 'station_short_name station_long_name')
+Annapolis = Station('AN', 'Annapolis')
 
 met_column_alias = {
     'Time (UTC)': 'time_utc',
