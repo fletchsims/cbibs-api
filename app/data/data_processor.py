@@ -31,10 +31,11 @@ MET_FILES = []
 
 # Let's just load in the Annapolis buoy data
 an_met = pd.read_csv(os.getenv('PATH_TO_MET'), skiprows=lambda x: x in [1, 2])
-an_ocean = pd.read_csv(os.getenv('PATH_TO_OCEAN'), skiprows=lambda x: x in [1, 2])
+# an_ocean = pd.read_csv(os.getenv('PATH_TO_OCEAN'), skiprows=lambda x: x in [1, 2])
 
 # Let's check for null values
 # print(an_ocean.isnull().sum())
 # print(an_met.isnull().sum())
+# print(an_met.count())
 print(an_met.count())
-print(an_ocean.count())
+print(an_met.dtypes)
