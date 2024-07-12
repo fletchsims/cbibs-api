@@ -125,27 +125,34 @@ def remove_duplicates(df, table, engine, time_col='time_utc'):
 
 
 def etl(file_path_var, schema, db_table_name):
-    """ Main function to execute ETL process """
+    """Main ETL function."""
     logging.info(f"Running ETL for '{db_table_name}'")
     try:
         fp = os.getenv(file_path_var)
         if not fp:
-            logging.error(f"Environmental variable not set: '{file_path_var}'")
+            logging.error(f"Environment variable not set: '{file_path_var}'")
+            return
+
         df = load_and_process_csv(fp, schema)
 
         metadata = MetaData()
         table_name = f'an_{db_table_name}'
-        table = create_table(metadata, df, table_name)
-
         engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+
+        if not engine.dialect.has_table(engine.connect(), table_name):
+            table = create_table(metadata, df, table_name)
+            table.create(engine)
+        else:
+            table = Table(table_name, metadata, autoload_with=engine)
+
         df = filter_new_data(df, table, engine)
+        df = remove_duplicates(df, table, engine)
 
         if not df.empty:
-            table.create(engine)
             df.to_sql(table_name, engine, schema='public', index=False, if_exists='append')
             logging.info(f"Data inserted successfully for '{db_table_name}'.")
         else:
-            logging.info(f"No new data to insert into '{db_table_name}'")
+            logging.info(f"No new data to insert into '{db_table_name}'.")
     except SQLAlchemyError as e:
         logging.error(f"SQLAlchemy error: {e}")
         raise
