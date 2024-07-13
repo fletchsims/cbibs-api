@@ -13,16 +13,21 @@ load_dotenv()
 
 # API_Data = response.json()
 
+met_remap = {
+
+}
+ocean_remap = {
+    'time_utc': 'time_utc',
+    'Current Average Speed': 'current_average_speed',
+    'Current Average Direction': 'current_average_direction',
+    'Latitude': 'latitude',
+    'Longitude': 'longitude',
+    'Wave Direction': 'wave_direction',
+    'Maximum Wave Height': 'maximum_wave_height',
+
+}
 with open(os.getenv('SAMPLE_JSON_PATH')) as sample_data:
     sample = sample_data.read()
-
-# print(json.loads(sample)['stations']['stationShortName'])
-
-df = pd.json_normalize(json.loads(sample), 'stations')['variable']
-
-
-# print(list(df))
-# print(df['variable'])
 
 
 def parse_json(data):
@@ -37,14 +42,14 @@ def parse_json(data):
 
 tmp = parse_json(json.loads(sample))
 
-report_name = tmp['stations'][0]['variable'][1]['reportName']
+# report_name = tmp['stations'][0]['variable'][1]['reportName']
 
-actual_names = [
-    variable['actualName']
+report_name = [
+    variable['reportName']
     for station in tmp['stations']
     for variable in station['variable']
 ]
-actual_names.insert(0, 'time_utc')
+report_name.insert(0, 'time_utc')
 measurements = [
     msr['value']
     for station in tmp['stations']
@@ -58,8 +63,7 @@ time_utc = list({
     for msr in variable['measurements']
 })
 measurements.insert(0, time_utc[0])
+api_data = dict(zip(report_name, measurements))
 
-print(actual_names)
-print(measurements)
-print(time_utc)
+print(dict(zip(report_name, measurements)))
 # print(report_name)

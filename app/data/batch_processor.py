@@ -81,6 +81,9 @@ def load_and_process_csv(file_path, col_alias=None):
             (pd.read_csv(f, skiprows=lambda x: x in [1, 2]).rename(columns=col_alias) for f in all_files),
             ignore_index=True)
 
+        # Remove all the columns that contains _qc, north_surface_currents, and east_surface_currents
+        data.drop(data.filter(regex='_qc|north_surface_currents|east_surface_currents').columns, axis=1, inplace=True)
+
         # Convert 'Time (UTC)' to datetime
         if 'time_utc' in data.columns:
             data['time_utc'] = pd.to_datetime(data['time_utc'], dayfirst=True, format='mixed')
