@@ -10,33 +10,33 @@ from app.data.settings import BASE_URI
 load_dotenv()
 
 
-# response = requests.get(f"{BASE_URI}json/station/AN?key={os.getenv('CBIBS_API_KEY')}")
-
-# API_Data = response.json()
-
 class StationSearch:
-    def __init__(self, station, key):
+    def __init__(self, key: str, station: str = None):
         self._base_url = "https://mw.buoybay.noaa.gov/api/v1/"
+        self.station = station
+        self.key = key
 
-    def _grab_station_data(self, station, key):
-        station = requests.get(f"{self._base_url}json/station/{station}/?key={key}")
-        return station
+    def _grab_station_data(self):
+        if not self.station:
+            raise ValueError("Station ID must be provided")
+        try:
+            response = requests.get(f"{self._base_url}json/station/{self.station}/?key={self.key}")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching data: {e}")
+            return None
+
+    def _grab_all_station_data(self):
+        try:
+            response = requests.get(f"{self._base_url}json/station?key={self.key}")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching data: {e}")
+            return None
 
 
-
-met_remap = {
-
-}
-ocean_remap = {
-    'time_utc': 'time_utc',
-    'Current Average Speed': 'current_average_speed',
-    'Current Average Direction': 'current_average_direction',
-    'Latitude': 'latitude',
-    'Longitude': 'longitude',
-    'Wave Direction': 'wave_direction',
-    'Maximum Wave Height': 'maximum_wave_height',
-
-}
 with open(os.getenv('SAMPLE_JSON_PATH')) as sample_data:
     sample = sample_data.read()
 
@@ -56,7 +56,7 @@ tmp = parse_json(json.loads(sample))
 # report_name = tmp['stations'][0]['variable'][1]['reportName']
 
 report_name = [
-    variable['reportName']
+    variable['actualName']
     for station in tmp['stations']
     for variable in station['variable']
 ]
@@ -74,7 +74,5 @@ time_utc = list({
     for msr in variable['measurements']
 })
 measurements.insert(0, time_utc[0])
-api_data = dict(zip(report_name, measurements))
-
 print(dict(zip(report_name, measurements)))
-# print(report_name)
+

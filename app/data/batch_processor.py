@@ -8,7 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine, Table, Column, String, MetaData, Integer, Float, select, TIMESTAMP
 from sqlalchemy.exc import SQLAlchemyError
 
-from settings import DB_NAME, DB_HOST, DB_PORT, DB_PASSWORD, DB_TABLE_OCEAN, DB_USER, DB_TABLE_MET
+from settings import DB_NAME, DB_HOST, DB_PORT, DB_PASSWORD, DB_TABLE_OCEAN_HISTORICAL, DB_USER, DB_TABLE_MET_HISTORICAL
 
 # Load env variables
 dotenv.load_dotenv()
@@ -82,7 +82,7 @@ def load_and_process_csv(file_path, col_alias=None):
             ignore_index=True)
 
         # Remove all the columns that contains _qc, north_surface_currents, and east_surface_currents
-        data.drop(data.filter(regex='_qc|north_surface_currents|east_surface_currents').columns, axis=1, inplace=True)
+        data.drop(data.filter(regex='_qc').columns, axis=1, inplace=True)
 
         # Convert 'Time (UTC)' to datetime
         if 'time_utc' in data.columns:
@@ -169,5 +169,5 @@ def etl(file_path_var, schema, db_table_name):
 
 
 if __name__ == '__main__':
-    etl('PATH_TO_OCEAN', ocean_column_alias, DB_TABLE_OCEAN)
-    etl('PATH_TO_MET', met_column_alias, DB_TABLE_MET)
+    etl('PATH_TO_OCEAN', ocean_column_alias, DB_TABLE_OCEAN_HISTORICAL)
+    etl('PATH_TO_MET', met_column_alias, DB_TABLE_MET_HISTORICAL)
