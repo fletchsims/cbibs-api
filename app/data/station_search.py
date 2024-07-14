@@ -1,11 +1,8 @@
 import json
 import os
 
-import pandas as pd
 import requests
 from dotenv import load_dotenv
-
-from app.data.settings import BASE_URI
 
 load_dotenv()
 
@@ -16,7 +13,7 @@ class StationSearch:
         self.station = station
         self.key = key
 
-    def _grab_station_data(self):
+    def grab_station_data(self):
         if not self.station:
             raise ValueError("Station ID must be provided")
         try:
@@ -27,7 +24,7 @@ class StationSearch:
             print(f"Error fetching data: {e}")
             return None
 
-    def _grab_all_station_data(self):
+    def grab_all_station_data(self):
         try:
             response = requests.get(f"{self._base_url}json/station?key={self.key}")
             response.raise_for_status()
@@ -75,4 +72,3 @@ time_utc = list({
 })
 measurements.insert(0, time_utc[0])
 print(dict(zip(report_name, measurements)))
-
