@@ -48,6 +48,8 @@ def parse_json(data):
     return result
 
 
+# station = StationSearch(os.getenv('CBIBS_API_KEY'), 'AN')
+# tmp = parse_json(station.grab_station_data())
 tmp = parse_json(json.loads(sample))
 
 # report_name = tmp['stations'][0]['variable'][1]['reportName']
