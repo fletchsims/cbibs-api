@@ -9,9 +9,20 @@ from app.data.settings import BASE_URI
 
 load_dotenv()
 
+
 # response = requests.get(f"{BASE_URI}json/station/AN?key={os.getenv('CBIBS_API_KEY')}")
 
 # API_Data = response.json()
+
+class StationSearch:
+    def __init__(self, station, key):
+        self._base_url = "https://mw.buoybay.noaa.gov/api/v1/"
+
+    def _grab_station_data(self, station, key):
+        station = requests.get(f"{self._base_url}json/station/{station}/?key={key}")
+        return station
+
+
 
 met_remap = {
 
