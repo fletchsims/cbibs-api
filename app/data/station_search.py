@@ -4,12 +4,13 @@ import os
 import requests
 from dotenv import load_dotenv
 
+# Load env variables
 load_dotenv()
 
 
 class StationSearch:
     def __init__(self, key: str, station: str = None):
-        self._base_url = "https://mw.buoybay.noaa.gov/api/v1/"
+        self.base_url = "https://mw.buoybay.noaa.gov/api/v1/"
         self.station = station
         self.key = key
 
@@ -17,7 +18,7 @@ class StationSearch:
         if not self.station:
             raise ValueError("Station ID must be provided")
         try:
-            response = requests.get(f"{self._base_url}json/station/{self.station}/?key={self.key}")
+            response = requests.get(f"{self.base_url}json/station/{self.station}/?key={self.key}")
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -26,7 +27,7 @@ class StationSearch:
 
     def grab_all_station_data(self):
         try:
-            response = requests.get(f"{self._base_url}json/station?key={self.key}")
+            response = requests.get(f"{self.base_url}json/station?key={self.key}")
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
