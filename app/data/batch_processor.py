@@ -131,7 +131,7 @@ def remove_duplicates(df, table, engine, time_col='time_utc'):
         raise
 
 
-def etl(file_path_var, schema, db_table_name):
+def main(file_path_var, schema, db_table_name):
     """Main ETL function."""
     logging.info(f"Running ETL for '{db_table_name}'")
     try:
@@ -169,5 +169,5 @@ def etl(file_path_var, schema, db_table_name):
 
 
 if __name__ == '__main__':
-    etl('PATH_TO_OCEAN', ocean_column_alias, DB_TABLE_OCEAN_HISTORICAL)
-    etl('PATH_TO_MET', met_column_alias, DB_TABLE_MET_HISTORICAL)
+    main('PATH_TO_OCEAN', ocean_column_alias, DB_TABLE_OCEAN_HISTORICAL)
+    main('PATH_TO_MET', met_column_alias, DB_TABLE_MET_HISTORICAL)
