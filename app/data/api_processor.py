@@ -3,8 +3,11 @@ import os
 
 import requests
 from dotenv import load_dotenv
-from sqlalchemy import Column, Float, String, TIMESTAMP
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, Float, String, TIMESTAMP, create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+from app.data.databasedriver import DatabaseDriver
+from app.data.settings import DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DB_USER
 
 # Load env variables
 load_dotenv()
@@ -114,6 +117,49 @@ def etl_station_data(data):
 
 # station = StationSearch(os.getenv('CBIBS_API_KEY'), 'AN')
 
+
+data = etl_station_data(json.loads(sample))
 tmp = parse_json(json.loads(sample))
-print(etl_station_data(json.loads(sample)))
+print(data)
+
+station_data = StationData(
+    station_short_name=data.get('station_short_name'),
+    station_long_name=data.get('station_long_name'),
+    op_state=data.get('op_state'),
+    time_utc=data.get('time_utc'),
+    air_pressure=data.get('air_pressure'),
+    air_temperature=data.get('air_temperature'),
+    current_average_speed=data.get('current_average_speed'),
+    current_average_direction=data.get('current_average_direction'),
+    latitude=data.get('latitude'),
+    longitude=data.get('longitude'),
+    sea_surface_wave_from_direction=data.get('sea_surface_wave_from_direction'),
+    sea_surface_maximum_wave_height=data.get('sea_surface_maximum_wave_height'),
+    sea_surface_wave_significant_height=data.get('sea_surface_wave_significant_height'),
+    sea_surface_wind_wave_period=data.get('sea_surface_wind_wave_period'),
+    sea_water_salinity=data.get('sea_water_salinity'),
+    sea_water_temperature=data.get('sea_water_temperature'),
+    wind_from_direction=data.get('wind_from_direction'),
+    wind_speed=data.get('wind_speed'),
+    wind_speed_of_gust=data.get('wind_speed_of_gust'),
+    seanettle_prob=data.get('seanettle_prob'),
+    wind_chill=data.get('wind_chill'),
+    battery_volts=data.get('battery_volts'),
+    solar_panel_charge_current=data.get('solar_panel_charge_current'),
+    compass_heading=data.get('compass_heading'),
+    compass_pitch=data.get('compass_pitch'),
+    compass_roll=data.get('compass_roll')
+)
+
+
+db = DatabaseDriver
+engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}', echo=True)
+# create our class
+Session = sessionmaker(bind=engine)
+# instantiate it
+session = Session()
+
+# then we can use it
+session.add(station_data)
+
 
