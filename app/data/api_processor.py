@@ -154,6 +154,7 @@ station_data = StationData(
 
 db = DatabaseDriver
 engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}', echo=True)
+Base.metadata.create_all(engine)
 # create our class
 Session = sessionmaker(bind=engine)
 # instantiate it
@@ -161,5 +162,4 @@ session = Session()
 
 # then we can use it
 session.add(station_data)
-
-
+session.commit()

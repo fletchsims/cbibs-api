@@ -157,7 +157,7 @@ def main(file_path_var, schema, db_table_name):
 
         if not df.empty:
             df.to_sql(table_name, engine, schema='public', index=False, if_exists='append')
-            logging.info(f"Data inserted successfully for '{db_table_name}'.")
+            logging.info(f"Data inserted successfully for '{db_table_name}'. Inserted {len(df)} rows.")
         else:
             logging.info(f"No new data to insert into '{db_table_name}'.")
     except SQLAlchemyError as e:
