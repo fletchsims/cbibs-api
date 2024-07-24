@@ -1,16 +1,22 @@
-import json
+import logging
 import os
 
+import pandas as pd
 import requests
 from dotenv import load_dotenv
-from sqlalchemy import Column, Float, String, TIMESTAMP, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import Column, Float, String, TIMESTAMP, create_engine, MetaData, Table
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import declarative_base
 
+from app.data.batch_processor import create_table, remove_duplicates
 from app.data.databasedriver import DatabaseDriver
 from app.data.settings import DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DB_USER
 
 # Load env variables
 load_dotenv()
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 Base = declarative_base()
 
@@ -76,9 +82,9 @@ with open(os.getenv('SAMPLE_JSON_PATH')) as sample_data:
     sample = sample_data.read()
 
 
-def parse_json(data):
+def parse_json(json_data):
     result = {}
-    for key, value in data.items():
+    for key, value in json_data.items():
         if isinstance(value, dict):
             result[key] = parse_json(value)
         else:
@@ -115,51 +121,37 @@ def etl_station_data(data):
     return dict(zip(station_keys, measurements))
 
 
-# station = StationSearch(os.getenv('CBIBS_API_KEY'), 'AN')
+def main(table_name, station):
+    station = StationSearch(os.getenv('CBIBS_API_KEY'), station)
+    df = pd.DataFrame.from_dict([etl_station_data(parse_json(station.grab_station_data()))])
+    try:
+        engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}', echo=True)
+    except SQLAlchemyError as e:
+        logging.error(f"Error creating engine: {e}")
+        raise
+    metadata = MetaData()
+    try:
+        if not engine.dialect.has_table(engine.connect(), table_name):
+            table = create_table(metadata, df, table_name)
+            table.create(engine)
+        else:
+            table = Table(table_name, metadata, autoload_with=engine)
+
+        data = remove_duplicates(df, table, engine)
+
+        if not data.empty:
+            data.to_sql(table_name, engine, schema='public', index=False, if_exists='append')
+            logging.info(f"Data inserted successfully for '{table_name}'. Inserted {len(data)} rows.")
+        else:
+            logging.info(f"No new data to insert into '{table_name}'.")
+    except SQLAlchemyError as e:
+        logging.error(f"SQLAlchemy error: {e}")
+        raise
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        raise
 
 
-data = etl_station_data(json.loads(sample))
-tmp = parse_json(json.loads(sample))
-print(data)
-
-station_data = StationData(
-    station_short_name=data.get('station_short_name'),
-    station_long_name=data.get('station_long_name'),
-    op_state=data.get('op_state'),
-    time_utc=data.get('time_utc'),
-    air_pressure=data.get('air_pressure'),
-    air_temperature=data.get('air_temperature'),
-    current_average_speed=data.get('current_average_speed'),
-    current_average_direction=data.get('current_average_direction'),
-    latitude=data.get('latitude'),
-    longitude=data.get('longitude'),
-    sea_surface_wave_from_direction=data.get('sea_surface_wave_from_direction'),
-    sea_surface_maximum_wave_height=data.get('sea_surface_maximum_wave_height'),
-    sea_surface_wave_significant_height=data.get('sea_surface_wave_significant_height'),
-    sea_surface_wind_wave_period=data.get('sea_surface_wind_wave_period'),
-    sea_water_salinity=data.get('sea_water_salinity'),
-    sea_water_temperature=data.get('sea_water_temperature'),
-    wind_from_direction=data.get('wind_from_direction'),
-    wind_speed=data.get('wind_speed'),
-    wind_speed_of_gust=data.get('wind_speed_of_gust'),
-    seanettle_prob=data.get('seanettle_prob'),
-    wind_chill=data.get('wind_chill'),
-    battery_volts=data.get('battery_volts'),
-    solar_panel_charge_current=data.get('solar_panel_charge_current'),
-    compass_heading=data.get('compass_heading'),
-    compass_pitch=data.get('compass_pitch'),
-    compass_roll=data.get('compass_roll')
-)
-
-
-db = DatabaseDriver
-engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}', echo=True)
-Base.metadata.create_all(engine)
-# create our class
-Session = sessionmaker(bind=engine)
-# instantiate it
-session = Session()
-
-# then we can use it
-session.add(station_data)
-session.commit()
+if __name__ == '__main__':
+    db = DatabaseDriver
+    main('event_cbibs', 'AN')
