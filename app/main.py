@@ -1,4 +1,4 @@
-from databasedriver import DatabaseDriver
+from database_driver import DatabaseDriver
 
 from helpers import DB_NAME, DB_HOST, DB_PORT, DB_PASSWORD, DB_USER, DB_TABLE_MET_HISTORICAL
 

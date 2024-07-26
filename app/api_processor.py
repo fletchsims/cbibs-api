@@ -8,7 +8,7 @@ from sqlalchemy import Column, Float, String, TIMESTAMP, create_engine, MetaData
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import declarative_base
 
-from app.databasedriver import DatabaseDriver
+from app.database_driver import DatabaseDriver
 from app.helpers import DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DB_USER, create_table, remove_duplicates
 
 # Load env variables
