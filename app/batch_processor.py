@@ -121,9 +121,12 @@ def filter_new_data(df, table, engine, time_col='time_utc'):
 
 def remove_duplicates(df, table, engine, time_col='time_utc'):
     try:
+        df = df.reset_index(drop=True)
+        print(df.index)
         with engine.connect() as connection:
             existing_data = pd.read_sql_table(table.name, connection)
-            merged_df = pd.concat([existing_data, df]).drop_duplicates(subset=[time_col], keep='last')
+            merged_df = pd.concat([existing_data, df]).drop_duplicates(subset=[time_col], keep='last',
+                                                                       ignore_index=True)
             new_data = merged_df[~merged_df.index.isin(existing_data.index)]
             return new_data
     except SQLAlchemyError as e:

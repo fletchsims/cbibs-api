@@ -51,7 +51,7 @@ class StationData(Base):
     compass_roll = Column(Float)
 
 
-class StationSearch:
+class CbibsStation:
     def __init__(self, key: str, station: str = None):
         self.base_url = "https://mw.buoybay.noaa.gov/api/v1/"
         self.station = station
@@ -65,7 +65,7 @@ class StationSearch:
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            print(f"Error fetching data: {e}")
+            logging.error(f"Error fetching data: {e}")
             return None
 
     def grab_all_station_data(self):
@@ -74,7 +74,7 @@ class StationSearch:
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
-            print(f"Error fetching data: {e}")
+            logging.error(f"Error fetching data: {e}")
             return None
 
 
@@ -122,7 +122,7 @@ def etl_station_data(data):
 
 
 def main(table_name, station):
-    station = StationSearch(os.getenv('CBIBS_API_KEY'), station)
+    station = CbibsStation(os.getenv('CBIBS_API_KEY'), station)
     df = pd.DataFrame.from_dict([etl_station_data(parse_json(station.grab_station_data()))])
     try:
         engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}', echo=True)
@@ -153,5 +153,4 @@ def main(table_name, station):
 
 
 if __name__ == '__main__':
-    db = DatabaseDriver
     main('event_cbibs', 'AN')
