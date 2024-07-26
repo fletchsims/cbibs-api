@@ -15,11 +15,14 @@ strength and direction is invaluable to all racers in the bay.
 There is also easily available site to view historical data. The goal of this project is to also analyze this data so 
 that sailors racing in the Annapolis area have an idea of historical trends for all times of the year.
 
-### TODOs
-1. Fix project structure
-2. Add in schedule and test
-3. Create tests
-4. Create docker deployment
-5. Add in streamlit app
+### Immediate TODOs
+1. Create tests
+2. Create docker deployment for API and DB
+3. Data analysis
+4. Mock up visuals for streamlit app
 
+### Long term TODOs
+1. Clean up/fix project structure
+2. add in streamlit app
+3. Schedule for API to process real time data
 
