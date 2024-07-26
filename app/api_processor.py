@@ -15,7 +15,7 @@ from app.helpers import DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DB_USER, create_
 load_dotenv()
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 

@@ -15,7 +15,7 @@ from helpers import DB_NAME, DB_HOST, DB_PORT, DB_PASSWORD, DB_TABLE_OCEAN_HISTO
 dotenv.load_dotenv()
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 Station = namedtuple('Station', 'station_short_name station_long_name')
 Annapolis = Station('AN', 'Annapolis')
