@@ -45,6 +45,7 @@ def create_table(metadata, df, table_name):
 
 
 def remove_duplicates(df, table, engine, time_col='time_utc'):
+    """Remove duplicates for updating new data in the DB"""
     try:
         df = df.reset_index(drop=True)
         print(df.index)
