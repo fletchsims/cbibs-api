@@ -19,7 +19,7 @@ def sample_table():
 
 @pytest.fixture
 def setup_table(engine, sample_table):
-    """Fixture to setup the table in the test database."""
+    """Fixture to set up the table in the test database."""
     metadata = MetaData()
     table = Table('test_table', metadata,
                   Column('col_one', Integer, primary_key=True),
