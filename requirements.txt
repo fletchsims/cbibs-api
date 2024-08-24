@@ -1,3 +1,4 @@
+aiohttp
 pandas
 python-dotenv
 requests
