@@ -1,5 +1,9 @@
 """CBIBS Module"""
+import sys
+
 import requests
+
+from version import __version__
 
 DEFAULT_DOMAIN = 'mw.buoybay.noaa.gov'
 
@@ -25,6 +29,10 @@ class InvalidInputError(CbibsApiError):
     __str__ = __unicode__
 
 
+class UnknownError(CbibsApiError):
+    """There is a problem with CBIBS server."""
+
+
 class CbibsModule:
     session = None
 
@@ -44,6 +52,8 @@ class CbibsModule:
         return False
 
     def cbibs(self, query, **kwargs):
+        raw_response = kwargs.pop('raw_response', False)
+        request = self._parse_request(query, kwargs)
         pass
 
     def _parse_request(self, query, params):
@@ -52,3 +62,20 @@ class CbibsModule:
         data = {'q': query, 'key': self.key}
         data.update(params)
         return data
+
+    def _cbibs_request(self, params):
+        response = requests.get(self.url, params=params)
+        pass
+
+    def _cbibs_headers(self, client):
+        if client == 'requests':
+            client_version = requests.__version__
+
+        return {
+            'User-Agent': 'cbibs-python/%s Python/%s %s/%s' % (
+                __version__,
+                '.'.join(str(x) for x in sys.version_info[0:3]),
+                client,
+                client_version
+            )
+        }
