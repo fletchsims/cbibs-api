@@ -2,6 +2,7 @@
 import sys
 
 import requests
+import requests.packages
 
 from version import __version__
 
@@ -54,7 +55,9 @@ class CbibsModule:
     def cbibs(self, query, **kwargs):
         raw_response = kwargs.pop('raw_response', False)
         request = self._parse_request(query, kwargs)
-        pass
+        response = self._cbibs_request(request)
+        if raw_response:
+            return response
 
     def _parse_request(self, query, params):
         if not isinstance(query, str):
@@ -64,8 +67,12 @@ class CbibsModule:
         return data
 
     def _cbibs_request(self, params):
-        response = requests.get(self.url, params=params)
-        pass
+        response = requests.get(self.url, params=params, headers=self._cbibs_headers('requests'))
+        try:
+            response_json = response.json()
+        except ValueError as excinfo:
+            raise UnknownError("Non-JSON result from server") from excinfo
+        return response_json
 
     def _cbibs_headers(self, client):
         if client == 'requests':
@@ -79,3 +86,11 @@ class CbibsModule:
                 client_version
             )
         }
+
+
+class CbibsAdapter:
+    def __init__(self, api_key: str = '', protocol: str = 'https', ver: str = 'v1'):
+        self._api_key = api_key
+        if protocol and protocol not in ('http', 'https'):
+            protocol = 'https'
+        self.url = protocol + "://" + DEFAULT_DOMAIN + '/api/' + ver + '/'
