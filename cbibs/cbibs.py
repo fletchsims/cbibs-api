@@ -94,3 +94,12 @@ class CbibsAdapter:
         if protocol and protocol not in ('http', 'https'):
             protocol = 'https'
         self.url = protocol + "://" + DEFAULT_DOMAIN + '/api/' + ver + '/'
+
+    def __enter__(self):
+        self.session = requests.Session()
+        return self
+
+    def __exit__(self, *args):
+        self.session.close()
+        self.session = None
+        return False
